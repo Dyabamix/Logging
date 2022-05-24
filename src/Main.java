@@ -11,12 +11,12 @@ public class Main {
         Logger logger = Logger.getLogger(Solution.class.getName());
 
         Solution.Inspector inspector = new Solution.Inspector();
-        Solution.Spy spy = new Solution.Spy(logger, logger);
+        Solution.Spy spy = new Solution.Spy(logger);
         Solution.Thief thief = new Solution.Thief(10000);
-        Solution.MailService variousWorkers[] = new Solution.MailService[]{spy, thief, inspector};
+        Solution.MailService[] variousWorkers = new Solution.MailService[]{spy, thief, inspector};
         Solution.UntrustworthyMailWorker worker = new Solution.UntrustworthyMailWorker(variousWorkers);
 
-        Solution.AbstractSendable correspondence[] = {
+        Solution.AbstractSendable[] correspondence = {
                 new Solution.MailMessage("Oxxxymiron", "Гнойный", "Я здесь чисто по фану, поглумиться над слабым\n" +
                         "Ты же вылез из мамы под мой дисс на Бабана...."),
                 new Solution.MailMessage("Гнойный", "Oxxxymiron", "....Что? Так болел за Россию, что на нервах терял ганглии.\n" +

@@ -34,8 +34,18 @@ public class Solution {
 
         @Override
         public Sendable processMail(Sendable mail) {
-            // your code here...
-            return mail;
+            // "stones instead of {content}"
+            Sendable newMail = mail;
+            int valuePriceMail;
+            if (mail instanceof MailPackage &&
+                    (valuePriceMail = ((MailPackage) mail).getContent().getPrice()) >= minValue){
+                stolenValue += valuePriceMail;
+                newMail = new MailPackage(mail.getFrom(),
+                        mail.getTo(),
+                        new Package("stones instead of " + ((MailPackage) mail).getContent().getContent(),0));
+            }
+
+            return newMail;
         }
 
     }
@@ -44,14 +54,29 @@ public class Solution {
     public static class Spy implements MailService {
         private final Logger logger;
 
-        public Spy(Logger l, Logger logger) {
+        public Spy(Logger logger) {
             // your code here...
             this.logger = logger;
         }
 
         @Override
         public Sendable processMail(Sendable mail) {
-            // your code here...
+            if (mail instanceof MailMessage &&
+                    (mail.getFrom().contains("Austin Powers") || mail.getTo().contains("Austin Powers"))){
+                logger.log(Level.WARNING, "Detected target mail correspondence: from " +
+                        mail.getFrom() +
+                        " to " +
+                        mail.getTo() +
+                        " \"" +
+                        ((MailMessage) mail).message +
+                        "\"",
+                        new Object[]{mail.getFrom(), mail.getTo()});
+            } else {
+                logger.log(Level.INFO, "Usual correspondence: from " +
+                        mail.getFrom() +
+                        " to " +
+                        mail.getTo());
+            }
             return mail;
         }
     }
@@ -76,30 +101,41 @@ public class Solution {
     public static class Inspector implements MailService {
 
         @Override
-        public Sendable processMail(Sendable mail) {
-            return null;
+        public Sendable processMail(Sendable mail) { //weapons" и "banned substance
+            if (mail instanceof MailPackage &&
+                    (((MailPackage) mail).getContent().getContent().contains("weapons") ||
+                            ((MailPackage) mail).getContent().getContent().contains("banned substance"))){
+                throw new IllegalPackageException();
+            } else if (mail instanceof MailPackage &&
+                    ((MailPackage) mail).getContent().getContent().contains("stones")){
+                throw new StolenPackageException();
+            }
+            return mail;
         }
     }
 
     // ------======== Ненадёжный сотрудник =======---------
     public static class UntrustworthyMailWorker implements MailService {
         private static MailService[] workers;
-        private static RealMailService realWorker = new RealMailService();
+        private static final RealMailService realWorker = new RealMailService();
 
         public UntrustworthyMailWorker (MailService[] w){
-            // your code here...
+            workers = w;
         }
 
         public MailService getRealMailService() {
-            // your code here...
-            return new RealMailService();
+            return realWorker;
         }
 
         @Override
         public Sendable processMail(Sendable mail) {
-            // your code here...
+            Sendable launchedInACircle = null;
 
-            return mail;
+            for (MailService ms : workers){
+                launchedInACircle = ms.processMail(mail);
+            }
+
+            return realWorker.processMail(launchedInACircle);
         }
     }
 
